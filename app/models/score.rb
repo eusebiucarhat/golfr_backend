@@ -4,7 +4,9 @@
 class Score < ApplicationRecord
   belongs_to :user
 
-  validates :total_score, inclusion: { in: 54..120 }
+  validates :total_score, inclusion: { in: 27..90 } if :number_of_holes == 9
+  validates :total_score, inclusion: { in: 54..180 } if :number_of_holes == 18
+  validates :number_of_holes, inclusion: { in: [9, 18] }
   validate :future_score
 
   def serialize
@@ -14,6 +16,7 @@ class Score < ApplicationRecord
       user_name: user.name,
       total_score: total_score,
       played_at: played_at,
+      number_of_holes: number_of_holes,
     }
   end
 
