@@ -27,6 +27,17 @@ describe Api::ScoresController, type: :request do
       played_at: '2021-06-13',
       number_of_holes: 9
     )
+    rng = Random.new
+    25.times do
+      number_of_holes = [9, 18].sample
+      Score.create(
+        user: user2,
+        total_score: number_of_holes == 9 ? rng.rand(27..90) : rng.rand(54..180),
+        # manualy set an older date to keep the other tests passing
+        played_at: '2021-04-01',
+        number_of_holes: number_of_holes
+      )
+    end
   end
 
   describe 'GET feed' do
@@ -37,12 +48,21 @@ describe Api::ScoresController, type: :request do
       response_hash = JSON.parse(response.body)
       scores = response_hash['scores']
 
-      expect(scores.size).to eq 3
       expect(scores[0]['user_name']).to eq 'User2'
       expect(scores[0]['total_score']).to eq 99
       expect(scores[0]['played_at']).to eq '2021-06-20'
       expect(scores[1]['total_score']).to eq 68
       expect(scores[2]['total_score']).to eq 79
+    end
+
+    it 'should limit number of scores for last 25' do
+      get api_feed_path
+
+      expect(response).to have_http_status(:ok)
+      response_hash = JSON.parse(response.body)
+      scores = response_hash['scores']
+
+      expect(scores.size).to eq 25
     end
   end
 
