@@ -6,9 +6,27 @@ describe Api::ScoresController, type: :request do
     user2 = create(:user, name: 'User2', email: 'user2@email.com', password: 'userpass')
     sign_in(@user1, scope: :user)
 
-    @score1 = create(:score, user: @user1, total_score: 79, played_at: '2021-05-20')
-    @score2 = create(:score, user: user2, total_score: 99, played_at: '2021-06-20')
-    @score3 = create(:score, user: user2, total_score: 68, played_at: '2021-06-13')
+    @score1 = create(
+      :score,
+      user: @user1,
+      total_score: 79,
+      played_at: '2021-05-20',
+      number_of_holes: 9
+    )
+    @score2 = create(
+      :score,
+      user: user2,
+      total_score: 99,
+      played_at: '2021-06-20',
+      number_of_holes: 18
+    )
+    @score3 = create(
+      :score,
+      user: user2,
+      total_score: 68,
+      played_at: '2021-06-13',
+      number_of_holes: 9
+    )
   end
 
   describe 'GET feed' do
@@ -32,7 +50,13 @@ describe Api::ScoresController, type: :request do
     it 'should save and return the new score if valid parameters' do
       score_count = Score.count
 
-      post api_scores_path, params: { score: { total_score: 79, played_at: '2021-06-29' }}
+      post api_scores_path, params: {
+        score: {
+          total_score: 79,
+          played_at: '2021-06-29',
+          number_of_holes: 9
+        }
+      }
 
       expect(response).to have_http_status(:ok)
       expect(Score.count).to eq score_count + 1
@@ -62,6 +86,36 @@ describe Api::ScoresController, type: :request do
       score_count = Score.count
 
       post api_scores_path, params: { score: { total_score: 10, played_at: '2021-06-29' }}
+
+      expect(response).not_to have_http_status(:ok)
+      expect(Score.count).to eq score_count
+    end
+
+    it 'should return validation error if number of holes are out of range' do
+      score_count = Score.count
+
+      post api_scores_path, params: {
+        score: {
+          total_score: 80,
+          played_at: '2021-06-29',
+          number_of_holes: 10
+        }
+      }
+
+      expect(response).not_to have_http_status(:ok)
+      expect(Score.count).to eq score_count
+    end
+
+    it 'should return validation error if scores are out of range' do
+      score_count = Score.count
+
+      post api_scores_path, params: {
+        score: {
+          total_score: 100,
+          played_at: '2021-06-29',
+          number_of_holes: 9
+        }
+      }
 
       expect(response).not_to have_http_status(:ok)
       expect(Score.count).to eq score_count
