@@ -4,9 +4,8 @@
 class Score < ApplicationRecord
   belongs_to :user
 
-  validates :total_score, inclusion: { in: 27..90 } if :number_of_holes == 9
-  validates :total_score, inclusion: { in: 54..180 } if :number_of_holes == 18
   validates :number_of_holes, inclusion: { in: [9, 18] }
+  validate :score_range
   validate :future_score
 
   def serialize
@@ -24,5 +23,14 @@ class Score < ApplicationRecord
 
   def future_score
     errors.add(:played_at, 'must not be in the future') if played_at > Time.zone.today
+  end
+
+  def score_range
+    range = ''
+    range = '27..90' if number_of_holes == 9
+    range = '54..180' if number_of_holes == 18
+    errors.add(:total_score, "is not in #{range} range") if
+      (number_of_holes == 9 && !total_score.between?(27, 90)) ||
+      (number_of_holes == 18 && !total_score.between?(54, 180))
   end
 end
