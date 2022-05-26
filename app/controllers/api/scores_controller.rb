@@ -15,9 +15,22 @@ module Api
       render json: response.to_json
     end
 
+    def user_scores
+      user = User.find_by(id: params[:id])
+      if user
+        render json: {
+          scores: user.scores.order(played_at: :desc, id: :desc),
+          name: user.name
+        }
+      else
+        render json: {
+          errors: 'User not found'
+        }, status: :not_found
+      end
+    end
+
     def create
       score = current_user.scores.build(score_params)
-
       if score.save
         render json: {
           score: score.serialize

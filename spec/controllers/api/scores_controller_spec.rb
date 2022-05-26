@@ -110,6 +110,36 @@ describe Api::ScoresController, type: :request do
       expect(response).not_to have_http_status(:ok)
       expect(Score.count).to eq score_count
     end
+
+    it 'should return validation error if number of holes are out of range' do
+      score_count = Score.count
+
+      post api_scores_path, params: {
+        score: {
+          total_score: 80,
+          played_at: '2021-06-29',
+          number_of_holes: 10
+        }
+      }
+
+      expect(response).not_to have_http_status(:ok)
+      expect(Score.count).to eq score_count
+    end
+
+    it 'should return validation error if scores are out of range' do
+      score_count = Score.count
+
+      post api_scores_path, params: {
+        score: {
+          total_score: 100,
+          played_at: '2021-06-29',
+          number_of_holes: 9
+        }
+      }
+
+      expect(response).not_to have_http_status(:ok)
+      expect(Score.count).to eq score_count
+    end
   end
 
   describe 'DELETE destroy' do
